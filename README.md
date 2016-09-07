@@ -6,7 +6,7 @@ the browser as well as on the server. It works with pretty much any
 markup, doesn’t depend on any framework and has automatic language
 detection.
 
-Note: This branch is edited by Mensu to support line numbers.
+Note: This branch is edited by [``Mensu``](https://github.com/Mensu) to support line numbers.
 
 ## Compile from Source
 
