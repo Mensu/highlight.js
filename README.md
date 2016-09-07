@@ -37,8 +37,8 @@ The generated ``highlight.pack.js`` can be previewed by opening ``./build/demo/i
 
 ```css
 .hljs {
-  display: inline-block; // display: block;
-  min-width: 100%; // overflow-x: auto;
+  display: inline-block; /* display: block; */
+  min-width: 100%; /* overflow-x: auto; */
   ....
 }
 ```
