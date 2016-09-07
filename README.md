@@ -10,7 +10,7 @@ Note: This branch is edited by Mensu to support line numbers.
 
 ## Compile from Source
 
-To compile, you should have ``node.js`` installed first. If you want to get compressed version, ``JDE`` is also required.
+To compile, you should have ``node.js`` installed first. Then run ``npm install`` to install dependent packages
 
 Generally speaking, running ``node ./tools/build.js`` provides compiled files
 
@@ -21,7 +21,7 @@ There are several useful options:
 - ``:common`` to support commonly used languages
 - ``lang1 lang2 ...`` commmand ``node ./tools/build.js python less`` would install python and less support
 
-``npm install`` to install dependent packages
+
 
 ``npm start`` is equivalent to ``node ./tools/build.js -n :common``, namely supporting commonly used languages without compressing the generated files
 
