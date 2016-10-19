@@ -1,14 +1,14 @@
 Library API
 ===========
 
-Highilght.js exports a few functions as methods of the ``hljs`` object.
+Highlight.js exports a few functions as methods of the ``hljs`` object.
 
 
-``highlight(language_name, value, ignore_illegals, continuation)``
-------------------------------------------------------------------
+``highlight(name, value, ignore_illegals, continuation)``
+---------------------------------------------------------
 
 Core highlighting function.
-Accepts a language name and a string with the code to highlight.
+Accepts a language name, or an alias, and a string with the code to highlight.
 The ``ignore_illegals`` parameter, when present and evaluates to a true value,
 forces highlighting to finish even in case of detecting illegal syntax for the
 language instead of throwing an exception.
@@ -19,43 +19,63 @@ Returns an object with the following properties:
 
 * ``language``: language name, same as the one passed into a function, returned for consistency with ``highlightAuto``
 * ``relevance``: integer value
-* ``keyword_count``: integer value
 * ``value``: HTML string with highlighting markup
 * ``top``: top of the current mode stack
 
 
-``highlightAuto(value)``
-------------------------
+``highlightAuto(value, languageSubset)``
+----------------------------------------
 
 Highlighting with language detection.
-Accepts a string with the code to highlight.
+Accepts a string with the code to highlight and an optional array of language names and aliases restricting detection to only those languages. The subset can also be set with ``configure``, but the local parameter overrides the option if set.
 Returns an object with the following properties:
 
 * ``language``: detected language
 * ``relevance``: integer value
-* ``keyword_count``: integer value
 * ``value``: HTML string with highlighting markup
 * ``second_best``: object with the same structure for second-best heuristically detected language, may be absent
 
 
-``fixMarkup(value, tabReplace, usBR)``
---------------------------------------
+``fixMarkup(value)``
+--------------------
 
-Post-processing of the highlighted markup.
-Accepts a string with the highlighted markup and two optional values:
+Post-processing of the highlighted markup. Currently consists of replacing indentation TAB characters and using ``<br>`` tags instead of new-line characters. Options are set globally with ``configure``.
 
-* ``tabReplace``: arbitrary string (may contain HTML) to replace TAB characters with
-* ``useBR``: a boolean flag to replace real line-breaks with ``<br>`` which is useful for non-``<pre>`` containers
+Accepts a string with the highlighted markup.
 
 
-``highlightBlock(block, tabReplace, useBR)``
---------------------------------------------
+``highlightBlock(block)``
+-------------------------
 
 Applies highlighting to a DOM node containing code.
-Accepts a DOM node and two optional parameters for ``fixMarkup``.
 
 This function is the one to use to apply highlighting dynamically after page load
 or within initialization code of third-party Javascript frameworks.
+
+The function uses language detection by default but you can specify the language
+in the ``class`` attribute of the DOM node. See the :doc:`class reference
+</css-classes-reference>` for all available language names and aliases.
+
+
+``configure(options)``
+----------------------
+
+Configures global options:
+
+* ``tabReplace``: a string used to replace TAB characters in indentation.
+* ``useBR``: a flag to generate ``<br>`` tags instead of new-line characters in the output, useful when code is marked up using a non-``<pre>`` container.
+* ``classPrefix``: a string prefix added before class names in the generated markup, used for backwards compatibility with stylesheets.
+* ``languages``: an array of language names and aliases restricting auto detection to only these languages.
+
+Accepts an object representing options with the values to updated. Other options don't change
+::
+
+  hljs.configure({
+    tabReplace: '    ', // 4 spaces
+    classPrefix: ''     // don't append class prefix
+                        // … other options aren't changed
+  })
+  hljs.initHighlighting();
 
 
 ``initHighlighting()``
@@ -63,15 +83,38 @@ or within initialization code of third-party Javascript frameworks.
 
 Applies highlighting to all ``<pre><code>..</code></pre>`` blocks on a page.
 
-To control tab replacement  use global flags on ``hljs`` object before initialization:
-
-::
-
-  hljs.tabReplace = '    '; //4 spaces
-  hljs.initHighlighting();
 
 
 ``initHighlightingOnLoad()``
 ----------------------------
 
 Attaches highlighting to the page load event.
+
+
+``registerLanguage(name, language)``
+------------------------------------
+
+Adds new language to the library under the specified name. Used mostly internally.
+
+* ``name``: a string with the name of the language being registered
+* ``language``: a function that returns an object which represents the
+  language definition. The function is passed the ``hljs`` object to be able
+  to use common regular expressions defined within it.
+
+
+``listLanguages()``
+----------------------------
+
+Returns the languages names list.
+
+
+
+.. _getLanguage:
+
+
+``getLanguage(name)``
+---------------------
+
+Looks up a language by name or alias.
+
+Returns the language object if found, ``undefined`` otherwise.

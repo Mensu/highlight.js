@@ -3,30 +3,26 @@ Syntax highlighting with language autodetection.
 https://highlightjs.org/
 */
 
-(function(factory) {
-
-  // Find the global object for export to both the browser and web workers.
-  var globalObject = typeof window === 'object' && window ||
-                     typeof self === 'object' && self;
-
-  // Setup highlight.js for different environments. First is Node.js or
-  // CommonJS.
-  if(typeof exports !== 'undefined') {
-    factory(exports);
-  } else if(globalObject) {
-    // Export hljs globally even when using AMD for cases when this script
-    // is loaded with others that may still expect a global hljs.
-    globalObject.hljs = factory({});
-
-    // Finally register the global hljs with AMD.
-    if(typeof define === 'function' && define.amd) {
-      define([], function() {
-        return globalObject.hljs;
-      });
-    }
-  }
-
-}(function(hljs) {
+(function exportModuleUniversally(root, factory) {
+  if (typeof(exports) === 'object' && typeof(module) === 'object')
+    module.exports = factory({});
+  else if (typeof(define) === 'function' && define.amd)
+    define([], function() {
+      return factory({});
+    });
+  /* amd  // module name: diff
+    define([other dependent modules, ...], function(other dependent modules, ...)) {
+      return exported object;
+    });
+    usage: require([required modules, ...], function(required modules, ...) {
+      // codes using required modules
+    });
+  */
+  else if (typeof(exports) === 'object')
+    exports['hljs'] = factory({});
+  else
+    root['hljs'] = factory({});
+})(this, function(hljs) {
   // Convenience variables for build-in objects
   var ArrayProto = [],
       objectKeys = Object.keys;
@@ -638,14 +634,6 @@ https://highlightjs.org/
       resultNode.innerHTML = result.value;
       result.value = mergeStreams(originalStream, nodeStream(resultNode), text);
     }
-    if (!hljs.noLineNum) {
-      var resultPre = document.createElement('pre');
-      resultPre.innerHTML = result.value;
-      var linesPre = document.createElement('pre');
-      var lines = escape(text.trimRight()).replace(/^.*?(\n|$)/gm, '<span class="line">$&</span>');
-      linesPre.innerHTML = lines;
-      result.value = mergeStreams(nodeStream(linesPre), nodeStream(resultPre), text);
-    }
     result.value = fixMarkup(result.value);
 
     block.innerHTML = result.value;
@@ -659,6 +647,21 @@ https://highlightjs.org/
         language: result.second_best.language,
         re: result.second_best.relevance
       };
+    }
+    addLinenum(block);
+    
+  }
+
+  function addLinenum(block) {
+    // straightforward implementation
+    if (!options.noLineNum) {
+      var linenumAddedInnerHTML = '';
+      var lines = block.innerHTML.split('\n');
+      linenumAddedInnerHTML += '<span class="line">' + lines[0] + '</span>';
+      for (var i = 1, totalLinesNum = lines.length; i < totalLinesNum; ++i) {
+        linenumAddedInnerHTML += '\n<span class="line">' + lines[i] + '</span>';
+      }
+      block.innerHTML = linenumAddedInnerHTML;
     }
   }
 
@@ -711,6 +714,7 @@ https://highlightjs.org/
   hljs.highlightAuto = highlightAuto;
   hljs.fixMarkup = fixMarkup;
   hljs.highlightBlock = highlightBlock;
+  hljs.addLinenum = addLinenum;
   hljs.configure = configure;
   hljs.initHighlighting = initHighlighting;
   hljs.initHighlightingOnLoad = initHighlightingOnLoad;
@@ -824,4 +828,4 @@ https://highlightjs.org/
   };
 
   return hljs;
-}));
+});

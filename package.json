@@ -6,29 +6,24 @@
     "syntax"
   ],
   "homepage": "https://highlightjs.org/",
-  "version": "9.6.0",
+  "version": "9.7.0",
   "author": {
     "name": "Ivan Sagalaev",
     "email": "maniac@softwaremaniacs.org"
   },
-  "contributors": [{
-      "name": "Mensu",
-      "email": "yxshw55@qq.com"
-    }
-  ],
+  "contributors": [],
   "bugs": {
     "url": "https://github.com/isagalaev/highlight.js/issues"
   },
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Mensu/highlight.js.git"
+    "url": "git://github.com/isagalaev/highlight.js.git"
   },
   "main": "./lib/index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha test/",
-    "test-browser": "./node_modules/.bin/mocha test/browser/",
-    "start": "node ./tools/build.js -n :common"
+    "test-browser": "./node_modules/.bin/mocha test/browser/"
   },
   "engines": {
     "node": "*"

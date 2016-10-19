@@ -26,6 +26,22 @@ Types of attributes values in this reference:
 Attributes
 ----------
 
+case_insensitive
+^^^^^^^^^^^^^^^^
+
+**type**: boolean
+
+Case insensitivity of language keywords and regexps. Used only on the top-level mode.
+
+
+aliases
+^^^^^^^
+
+**type**: array
+
+A list of additional names (besides the canonical one given by the filename) that can be used to identify a language in HTML classes and in a call to :ref:`getLanguage <getLanguage>`.
+
+
 className
 ^^^^^^^^^
 
@@ -43,7 +59,7 @@ begin
 **type**: regexp
 
 Regular expression starting a mode. For example a single quote for strings or two forward slashes for C-style comments.
-If absent, ``begin`` defaults to ``hljs.IMMEDIATE_RE`` that matches anything.
+If absent, ``begin`` defaults to a regexp that matches anything, so the mode starts immediately.
 
 
 end
@@ -56,16 +72,16 @@ Regular expression ending a mode. For example a single quote for strings or "$" 
 It's often the case that a beginning regular expression defines the entire mode and doesn't need any special ending.
 For example a number can be defined with ``begin: "\\b\\d+"`` which spans all the digits.
 
-If absent, ``end`` defaults to ``hljs.IMMEDIATE_RE`` that matches anything.
+If absent, ``end`` defaults to a regexp that matches anything, so the mode ends immediately.
 
 Sometimes a mode can end not by itself but implicitly with its containing (parent) mode.
 This is achieved with :ref:`endsWithParent <endsWithParent>` attribute.
 
 
-beginWithKeyword
+beginKeywords
 ^^^^^^^^^^^^^^^^
 
-**type**: boolean
+**type**: string
 
 Used instead of ``begin`` for modes starting with keywords to avoid needless repetition:
 
@@ -81,8 +97,11 @@ Used instead of ``begin`` for modes starting with keywords to avoid needless rep
 ::
 
   {
-    beginWithKeyword: true, keywords: 'extends implements'
+    beginKeywords: 'extends implements'
   }
+
+Unlike the :ref:`keywords <keywords>` attribute, this one allows only a simple list of space separated keywords.
+If you do need additional features of ``keywords`` or you just need more keywords for this mode you may include ``keywords`` along with ``beginKeywords``.
 
 
 .. _endsWithParent:
@@ -114,15 +133,56 @@ This is when ``endsWithParent`` comes into play:
     ]
   }
 
+.. _endsParent:
 
-.. _lexems:
+endsParent
+^^^^^^^^^^^^^^
 
-lexems
-^^^^^^
+**type**: boolean
+
+Forces closing of the parent mode right after the current mode is closed.
+
+This is used for modes that don't have an easily expressible ending lexeme but
+instead could be closed after the last interesting sub-mode is found.
+
+Here's an example with two ways of defining functions in Elixir, one using a
+keyword ``do`` and another using a comma:
+
+::
+
+  def foo :clear, list do
+    :ok
+  end
+
+  def foo, do: IO.puts "hello world"
+
+Note that in the first case the parameter list after the function title may also
+include a comma. And iIf we're only interested in highlighting a title we can
+tell it to end the function definition after itself:
+
+::
+
+  {
+    className: 'function',
+    beginKeywords: 'def', end: /\B\b/,
+    contains: [
+      {
+        className: 'title',
+        begin: hljs.IDENT_RE, endsParent: true
+      }
+    ]
+  }
+
+(The ``end: /\B\b/`` regex tells function to never end by itself.)
+
+.. _lexemes:
+
+lexemes
+^^^^^^^
 
 **type**: regexp
 
-A regular expression extracting individual lexems from language text to find ``[[#keywords]]`` among them.
+A regular expression that extracts individual lexemes from language text to find :ref:`keywords <keywords>` among them.
 Default value is ``hljs.IDENT_RE`` which works for most languages.
 
 
@@ -136,10 +196,9 @@ keywords
 Keyword definition comes in two forms:
 
 * ``'for while if else weird_voodoo|10 ... '`` -- a string of space-separated keywords with an optional relevance over a pipe
-* ``{'keyword': ' ... ', 'literal': ' ... '}`` -- an object whose keys are names of different kinds of keywords and values
-                                                  are keyword definition strings in the first form
+* ``{'keyword': ' ... ', 'literal': ' ... '}`` -- an object whose keys are names of different kinds of keywords and values are keyword definition strings in the first form
 
-For detailed explanation see [[Language]] definition guide.
+For detailed explanation see :doc:`Language definition guide </language-guide>`.
 
 
 illegal
@@ -147,7 +206,7 @@ illegal
 
 **type**: regexp
 
-A regular expression defining symbols illegal for the mode.
+A regular expression that defines symbols illegal for the mode.
 When the parser finds a match for illegal expression it immediately drops parsing the whole language altogether.
 
 
@@ -156,7 +215,7 @@ excludeBegin, excludeEnd
 
 **type**: boolean
 
-Exclude beginning or ending lexems out of mode's generated markup. For example in CSS syntax a rule ends with a semicolon.
+Exclude beginning or ending lexemes out of mode's generated markup. For example in CSS syntax a rule ends with a semicolon.
 However visually it's better not to color it as the rule contents. Having ``excludeEnd: true`` forces a ``<span>`` element for the rule to close before the semicolon.
 
 
@@ -165,7 +224,7 @@ returnBegin
 
 **type**: boolean
 
-Returns just found beginning lexem back into parser. This is used when beginning of a sub-mode is a complex expression
+Returns just found beginning lexeme back into parser. This is used when beginning of a sub-mode is a complex expression
 that should not only be found within a parent mode but also parsed according to the rules of a sub-mode.
 
 Since the parser is effectively goes back it's quite possible to create a infinite loop here so use with caution!
@@ -176,7 +235,7 @@ returnEnd
 
 **type**: boolean
 
-Returns just found ending lexem back into parser. This is used for example to parse Javascript embedded into HTML.
+Returns just found ending lexeme back into parser. This is used for example to parse Javascript embedded into HTML.
 A Javascript block ends with the HTML closing tag ``</script>`` that cannot be parsed with Javascript rules.
 So it is returned back into its parent HTML mode that knows what to do with it.
 
@@ -188,7 +247,7 @@ contains
 
 **type**: array
 
-The list of sub-modes that can be found inside the mode. For detailed explanation see [[Language]] definition guide.
+The list of sub-modes that can be found inside the mode. For detailed explanation see :doc:`Language definition guide </language-guide>`.
 
 
 starts
@@ -202,37 +261,64 @@ Currently this attribute is used to highlight Javascript and CSS contained withi
 Tags ``<script>`` and ``<style>`` start sub-modes that use another language definition to parse their contents (see :ref:`subLanguage`).
 
 
+variants
+^^^^^^^^
+
+**type**: array
+
+Modification to the main definitions of the mode, effectively expanding it into several similar modes
+each having all the attributes from the main definition augmented or overridden by the variants::
+
+  {
+    className: 'string',
+    contains: [hljs.BACKSLASH_ESCAPE],
+    relevance: 0,
+    variants: [
+      {begin: /"/, end: /"/},
+      {begin: /'/, end: /'/, relevance: 1}
+    ]
+  }
+
+
 .. _subLanguage:
 
 subLanguage
 ^^^^^^^^^^^
 
-**type**: identifier
+**type**: string or array
 
-The name of another language used to parse the contents of the mode.
-When using this attribute there's no point to define internal parsing rules like :ref:`lexems` or :ref:`keywords`.
-Also it is recommended to skip ``className`` attribute since the sublanguage will wrap the text in its own ``<span class="language-name">``
+Highlights the entire contents of the mode with another language.
 
-If the attribute is set to an empty string highlight.js will highlight the mode contents with language detection.
+When using this attribute there's no point to define internal parsing rules like :ref:`lexemes` or :ref:`keywords`. Also it is recommended to skip ``className`` attribute since the sublanguage will wrap the text in its own ``<span class="language-name">``.
 
-Note that for this to work the language should be included in the package (obviously).
+The value of the attribute controls which language or languages will be used for highlighting:
 
-subLanguageMode
-^^^^^^^^^^^^^^^
+* language name: explicit highlighting with the specified language
+* empty array: auto detection with all the languages available
+* array of language names: auto detection constrained to the specified set
 
-**type**: identifier
+skip
+^^^^
 
-The only available value for this is ``'continuous'``. By default ``subLanguage`` highlights the contents of the mode as an isolated code snippet. In continuous mode every occurance of the mode is treated as a continuation of the previous one and highlighted from the point where it was interrupted before.
+**type**: boolean
 
-This is best illustrated by an example. The following snippet consists of HTML markup intermixed with some templating language::
+Skips any markup processing for the mode ensuring that it remains a part of its
+parent buffer along with the starting and the ending lexemes. This works in
+conjunction with the parent's :ref:`subLanguage` when it requires complex
+parsing.
 
-    <link href="<% url 'style.css' absolute %>" rel="stylesheet">
+Consider parsing PHP inside HTML::
 
-To highlight HTML markup outside templating tags the language can be defined like this::
+  <p><? echo 'PHP'; /* ?> */ ?></p>
 
-    {
-      subLanguage: 'xml', subLanguageMode: 'continuous',
-      contains: [ ... templating tags ... ]
-    }
+The ``?>`` inside the comment should **not** end the PHP part, so we have to
+handle pairs of ``/* .. */`` to correctly find the ending ``?>``::
 
-The outside contents will be highlighted as 'xml' up to the first double quote. Then the templating tag will be highlighted according to the rules of the templating language. And after that 'xml' will restart from the previous parsing state — inside the value of a tag — and will correctly process the closing double quote and highlight the next HTML attribute.
+  {
+    begin: /<\?/, end: /\?>/,
+    subLanguage: 'php',
+    contains: [{begin: '/\\*', end: '\\*/', skip: true}]
+  }
+
+Without ``skip: true`` every comment would cause the parser to drop out back
+into the HTML mode.

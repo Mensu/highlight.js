@@ -5,8 +5,12 @@ Original highlight.js style (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
 */
 
 .hljs {
+  /*display: block;*/
+  /*overflow-x: auto;*/
   display: inline-block;
   min-width: 100%;
+  box-sizing: border-box;
+  border-radius: 3px;
   padding: 0.5em;
   background: #F0F0F0;
 }
@@ -29,7 +33,12 @@ Original highlight.js style (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
   padding-right: 0.5em; margin-right: 0.5em;
   color: #BBB; border-right: solid 1px;
 }
-
+.hljs-comment ~ .line {
+  color: #75715e;
+}
+.hljs-comment ~ .line::before {
+  font-style: normal;
+}
 
 /* Base color: saturation 0; */
 

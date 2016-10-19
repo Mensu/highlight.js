@@ -14,9 +14,11 @@ Contents:
    api
    language-guide
    reference
+   css-classes-reference
    style-guide
-   contribution
+   language-contribution
    building-testing
+   release-process
 
 Miscellaneous:
 

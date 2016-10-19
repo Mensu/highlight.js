@@ -19,7 +19,7 @@ There are several useful options:
 - ``-n`` get uncompressed version
 - ``-t`` specify target platform. Four expected choices: ``browser``, ``cdn``, ``node``, ``all``
 - ``:common`` to support commonly used languages
-- ``lang1 lang2 ...`` commmand ``node ./tools/build.js python less`` would install python and less support
+- ``lang1 lang2 ...`` command ``node ./tools/build.js python less`` would install python and less support
 
 
 
@@ -31,19 +31,46 @@ After compilation you may checkout ``./build`` folder and get ``highlight.pack.j
 
 The generated ``highlight.pack.js`` can be previewed by opening ``./build/demo/index.html`` in a browser
 
-### Edit Css Files
+### Edit CSS Files
 
-- First Step: find selector ``.hljs``, change ``display: block;`` to ``display: inline-block;`` and substitute ``overflow-x: auto;`` with ``min-width: 100%;``
+- First Step: find selector ``.hljs``, replace the following rules
 
 ```css
 .hljs {
-  display: inline-block; /* display: block; */
-  min-width: 100%; /* overflow-x: auto; */
-  ....
+  display: block;
+  overflow-x: auto;
+  ...
 }
 ```
 
-- Last Step: paste the following codes in the css file
+with
+
+```css
+.hljs {
+  display: inline-block;
+  min-width: 100%;
+  box-sizing: border-box;
+  border-radius: 3px;
+  ...
+}
+```
+
+namely:
+
+```css
+.hljs {
+  /* display: block; */
+  /* overflow-x: auto; */
+  display: inline-block;
+  min-width: 100%;
+  box-sizing: border-box;
+  border-radius: 3px;
+  ....
+
+}
+```
+
+- Last Step: paste the following rules into the CSS file
 
 ```css
 .hljs {
@@ -65,9 +92,49 @@ The generated ``highlight.pack.js`` can be previewed by opening ``./build/demo/i
   padding-right: 0.5em; margin-right: 0.5em;
   color: #BBB; border-right: solid 1px;
 }
+.hljs-comment ~ .line {
+  color: #75715e;
+}
+.hljs-comment ~ .line::before {
+  font-style: normal;
+}
 ```
 
 ## Getting Started
+
+### Recommended
+
+```javascript
+// highlightInit.js
+hljs.configure({noLinenum: false});  // default to false. unnecessary here
+// get the DOM elements to highlight
+var selector = 'fill in with the selector of the code blocks to highlight';
+var codeBlocks = document.querySelectorAll(selector);
+// call hljs.highlightBlock to highlight
+Array.prototype.slice.call(codeBlocks).forEach(function(oneBlock) {
+  hljs.highlightBlock(oneBlock);
+  // or
+  // hljs.addLinenum(oneBlock); // which simply adds line numbers without highlighting
+});
+```
+
+```html
+<head>
+  ...
+  <link rel="stylesheet" href="/path/to/styles/edited-style.css">
+  ...
+</head>
+<body>
+  ...
+  <!-- elements to highlight -->
+  ...
+  <script src="/path/to/highlight.pack.js"></script>
+  <script src="/path/to/highlightInit.js"></script>
+  ...
+</body>
+```
+
+### Original Doc
 
 The bare minimum for using highlight.js on a web page is linking to the
 library along with one of the styles and calling
@@ -107,8 +174,10 @@ Here’s an equivalent way to calling [`initHighlightingOnLoad`][1] using
 jQuery:
 
 ```javascript
+// hljs.configure({noLinenum: true});  // this setting is hide the line numbers
 $(document).ready(function() {
   $('pre code').each(function(i, block) {
+    // hljs.addLinenum(block); // simply add line numbers without highlighting
     hljs.highlightBlock(block);
   });
 });

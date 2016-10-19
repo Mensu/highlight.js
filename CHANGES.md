@@ -1,3 +1,32 @@
+## master
+
+New languages:
+
+- *Clean* by [Camil Staps][]
+- *Flix* by [Magnus Madsen][]
+
+[Camil Staps]: https://github.com/camilstaps
+[Magnus Madsen]: https://github.com/magnus-madsen
+
+
+## Version 9.7.0
+
+A comprehensive bugfix release. This is one of the best things about
+highlight.js: even boring things keep getting better (even if slow).
+
+- VHDL updated with PSL keywords and uses more consistent styling.
+- Nested C-style comments no longer break highlighting in many languages.
+- JavaScript updated with `=>` functions, highlighted object attributes and
+  parsing within template string substitution blocks (`${...}`).
+- Fixed another corner case with self-closing `<tag/>` in JSX.
+- Added `HEALTHCHECK` directive in Docker.
+- Delphi updated with new Free Pascal keywords.
+- Fixed digit separator parsing in C++.
+- C# updated with new keywords and fixed to allow multiple identifiers within
+  generics `<...>`.
+- Fixed another slow regex in Less.
+
+
 ## Version 9.6.0
 
 New languages:
